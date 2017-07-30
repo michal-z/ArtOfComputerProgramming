@@ -10,31 +10,40 @@ section '.text' code readable executable
 
 align 16
 gcd:
-; in: m = rcx, n = rdx positive integers
+; in: rcx = m, rdx = n both positive integers.
+        push    r12 r13
         sub     rsp,40
-        cmp     rcx,rdx                 ; [Ensure m >= n] If m < n, exchange m <-> n.
+        mov     r12,rcx
+        mov     r13,rdx
+        cmp     rcx,rdx                 ; Set rcx = n, rdx = m. Ensure m >= n. If m < n, exchange m <-> n.
         jbe     .begin
         xchg    rcx,rdx
-    .begin:                             ; rcx = n, rdx = m
-        mov     rax,rdx                 ; rax = m
+    .begin:                             ; Now we have: rcx = n, rdx = m.
+        mov     rax,rdx                 ; Set rax = m for division.
         xor     edx,edx
-        div     rcx                     ; m / n
+        div     rcx                     ; rdx = r = m / n
         test    rdx,rdx
         jz      .done
-        xchg    rdx,rcx
+        xchg    rdx,rcx                 ; We have rcx = n, rdx = r. Set m = n, n = r.
         jmp     .begin
     .done:
-        mov     rdx,rcx
-        lea     rcx,[_divisor_is]
+        mov     r9,rcx
+        lea     rcx,[_divisor_info]
+        mov     rdx,r12
+        mov     r8,r13
         icall   printf
         add     rsp,40
+        pop     r13 r12
         ret
 
 align 16
 main:
         sub     rsp,40
-        mov     rcx,180
-        mov     rdx,60
+        mov     rcx,270
+        mov     rdx,192
+        call    gcd
+        mov     rcx,177
+        mov     rdx,137688
         call    gcd
         add     rsp,40
         ret
@@ -82,7 +91,7 @@ _ExitProcess db 'ExitProcess',0
 _getch db '_getch',0
 _printf db 'printf',0
 _exit_msg db 'Hit any key to exit this program...',13,10,0
-_divisor_is db 'Greatest common divisor is %d.',13,10,0
+_divisor_info db 'Greatest common divisor of %d and %d is %d.',13,10,0
 
 section '.idata' import data readable writeable
 

@@ -4,81 +4,67 @@
 format pe64 console
 entry start
 
-macro icall addr* { call [addr] }
-
 section '.text' code readable executable
 
-align 16
-gcd:
-; in: rcx = m, rdx = n both positive integers.
-        push    r12 r13
-        sub     rsp,40
-        mov     r12,rcx
-        mov     r13,rdx
-        cmp     rcx,rdx                 ; Set rcx = n, rdx = m. Ensure m >= n. If m < n, exchange m <-> n.
-        jbe     .begin
-        xchg    rcx,rdx
-    .begin:                             ; Now we have: rcx = n, rdx = m.
-        mov     rax,rdx                 ; Set rax = m for division.
-        xor     edx,edx
-        div     rcx                     ; rdx = r = m / n
-        test    rdx,rdx
-        jz      .done
-        xchg    rdx,rcx                 ; We have rcx = n, rdx = r. Set m = n, n = r.
-        jmp     .begin
-    .done:
-        mov     r9,rcx
-        lea     rcx,[_divisor_info]
-        mov     rdx,r12
-        mov     r8,r13
-        icall   printf
-        add     rsp,40
-        pop     r13 r12
-        ret
-
-align 16
-main:
-        sub     rsp,40
-        mov     rcx,270
-        mov     rdx,192
-        call    gcd
-        mov     rcx,177
-        mov     rdx,137688
-        call    gcd
-        add     rsp,40
-        ret
-
-align 16
-start:
-        sub     rsp,40                  ; 32 bytes for shadow space, 8 bytes for 16 byte alignment
-        lea     rcx,[_kernel32_dll]
-        icall   LoadLibrary
-        mov     [kernel32_dll],rax
-        lea     rcx,[_msvcrt_dll]
-        icall   LoadLibrary
-        mov     [msvcrt_dll],rax
-        mov     rcx,[kernel32_dll]
-        lea     rdx,[_ExitProcess]
-        icall   GetProcAddress
-        mov     [ExitProcess],rax
-        mov     rcx,[msvcrt_dll]
-        lea     rdx,[_getch]
-        icall   GetProcAddress
-        mov     [getch],rax
-        mov     rcx,[msvcrt_dll]
-        lea     rdx,[_printf]
-        icall   GetProcAddress
-        mov     [printf],rax
-        call    main
-        lea     rcx,[_exit_msg]
-        icall   printf
-        icall   getch
-        xor     ecx,ecx
-        icall   ExitProcess
+gcd:    PUSH    r12 r13
+        SUB     rsp,40
+        MOV     r12,rcx
+        MOV     r13,rdx
+        CMP     rcx,rdx
+        JBE     .begin
+        XCHG    rcx,rdx
+.begin: MOV     rax,rdx
+        XOR     edx,edx
+        DIV     rcx
+        TEST    rdx,rdx
+        JZ      .done
+        XCHG    rdx,rcx
+        JMP     .begin
+.done:  MOV     r9,rcx
+        LEA     rcx,[_answer]
+        MOV     rdx,r12
+        MOV     r8,r13
+        CALL    [printf]
+        ADD     rsp,40
+        POP     r13 r12
+        RET
+main:   SUB     rsp,40
+        MOV     rcx,270
+        MOV     rdx,192
+        CALL    gcd
+        MOV     rcx,177
+        MOV     rdx,137688
+        CALL    gcd
+        ADD     rsp,40
+        RET
+start:  SUB     rsp,40
+        LEA     rcx,[_kernel32_dll]
+        CALL    [LoadLibrary]
+        MOV     [kernel32_dll],rax
+        LEA     rcx,[_msvcrt_dll]
+        CALL    [LoadLibrary]
+        MOV     [msvcrt_dll],rax
+        MOV     rcx,[kernel32_dll]
+        LEA     rdx,[_ExitProcess]
+        CALL    [GetProcAddress]
+        MOV     [ExitProcess],rax
+        MOV     rcx,[msvcrt_dll]
+        LEA     rdx,[_getch]
+        CALL    [GetProcAddress]
+        MOV     [getch],rax
+        MOV     rcx,[msvcrt_dll]
+        LEA     rdx,[_printf]
+        CALL    [GetProcAddress]
+        MOV     [printf],rax
+        CALL    main
+        LEA     rcx,[_exit_msg]
+        CALL    [printf]
+        CALL    [getch]
+        XOR     ecx,ecx
+        CALL    [ExitProcess]
 
 section '.data' data readable writeable
 
-align 8
 kernel32_dll dq 0
 msvcrt_dll dq 0
 getch dq 0
@@ -91,14 +77,13 @@ _ExitProcess db 'ExitProcess',0
 _getch db '_getch',0
 _printf db 'printf',0
 _exit_msg db 'Hit any key to exit this program...',13,10,0
-_divisor_info db 'Greatest common divisor of %d and %d is %d.',13,10,0
+_answer db 'Greatest common divisor of %d and %d is %d.',13,10,0
 
 section '.idata' import data readable writeable
 
 dd 0,0,0,rva _kernel32_dll,rva _kernel32_table
 dd 0,0,0,0,0
 
-align 8
 _kernel32_table:
   LoadLibrary dq rva _LoadLibrary
   GetProcAddress dq rva _GetProcAddress

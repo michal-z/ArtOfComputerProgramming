@@ -1,7 +1,7 @@
 ; Algorithm 1.1E (Euclids's algorithm) implemented in x86_64 assembly language.
 ; To generate executable file run 'fasm.exe 1_1E.asm' on the command line.
 
-format pe64 console
+format PE64 console
 entry Start
 
 section '.text' code readable executable
@@ -40,22 +40,22 @@ Main:   SUB     rsp,40
 Start:  SUB     rsp,40
         LEA     rcx,[_kernel32]
         CALL    [LoadLibrary]
-        MOV     [kernel32],rax
+        MOV     [kernel32],rax                  ; kernel32.dll
         LEA     rcx,[_msvcrt]
         CALL    [LoadLibrary]
-        MOV     [msvcrt],rax
+        MOV     [msvcrt],rax                    ; msvcrt.dll
         MOV     rcx,[kernel32]
         LEA     rdx,[_ExitProcess]
         CALL    [GetProcAddress]
-        MOV     [ExitProcess],rax
+        MOV     [ExitProcess],rax               ; ExitProcess
         MOV     rcx,[msvcrt]
         LEA     rdx,[_getch]
         CALL    [GetProcAddress]
-        MOV     [getch],rax
+        MOV     [getch],rax                     ; getch
         MOV     rcx,[msvcrt]
         LEA     rdx,[_printf]
         CALL    [GetProcAddress]
-        MOV     [printf],rax
+        MOV     [printf],rax                    ; printf
         CALL    Main
         LEA     rcx,[_exit]
         CALL    [printf]
@@ -65,31 +65,30 @@ Start:  SUB     rsp,40
 
 section '.data' data readable writeable
 
-kernel32 dq 0
-msvcrt dq 0
-getch dq 0
-ExitProcess dq 0
-printf dq 0
+kernel32        dq 0
+msvcrt          dq 0
+getch           dq 0
+ExitProcess     dq 0
+printf          dq 0
 
-_kernel32 db 'kernel32.dll',0
-_msvcrt db 'msvcrt.dll',0
-_ExitProcess db 'ExitProcess',0
-_getch db '_getch',0
-_printf db 'printf',0
-_exit db 'Hit any key to exit this program...',13,10,0
-_answer db 'Greatest common divisor of %d and %d is %d.',13,10,0
+_kernel32       db 'kernel32.dll',0
+_msvcrt         db 'msvcrt.dll',0
+_ExitProcess    db 'ExitProcess',0
+_getch          db '_getch',0
+_printf         db 'printf',0
+_exit           db 'Hit any key to exit this program...',13,10,0
+_answer         db 'Greatest common divisor of %d and %d is %d.',13,10,0
 
 section '.idata' import data readable writeable
 
-dd 0,0,0,rva _kernel32,rva _kernel32tbl
-dd 0,0,0,0,0
-
-_kernel32tbl:
-  LoadLibrary dq rva _LoadLibrary
-  GetProcAddress dq rva _GetProcAddress
-  dq 0
-
-_LoadLibrary dw 0
-  db 'LoadLibraryA',0
+                dd 0,0,0
+                dd rva _kernel32
+                dd rva LoadLibrary
+                dd 0,0,0,0,0
+LoadLibrary     dq rva _LoadLibrary
+GetProcAddress  dq rva _GetProcAddress
+                dq 0
+_LoadLibrary    dw 0
+                db 'LoadLibraryA',0
 _GetProcAddress dw 0
-  db 'GetProcAddress',0
+                db 'GetProcAddress',0

@@ -6,65 +6,70 @@ entry Start
 
 section '.text' code readable executable
 
-gcd:    PUSH    r12 r13
-        SUB     rsp,40
-        MOV     r12,rcx
-        MOV     r13,rdx
-        CMP     rcx,rdx
-        JBE     .1
-        XCHG    rcx,rdx
-.1:     MOV     rax,rdx
-        XOR     edx,edx
-        DIV     rcx
-        TEST    rdx,rdx
-        JZ      .2
-        XCHG    rdx,rcx
-        JMP     .1
-.2:     MOV     r9,rcx
-        LEA     rcx,[_answer]
-        MOV     rdx,r12
-        MOV     r8,r13
-        CALL    [printf]
-        ADD     rsp,40
-        POP     r13 r12
-        RET
-Main:   SUB     rsp,40
-        MOV     rcx,270
-        MOV     rdx,192
-        CALL    gcd
-        MOV     rcx,177
-        MOV     rdx,137688
-        CALL    gcd
-        ADD     rsp,40
-        RET
-Start:  SUB     rsp,40
-        LEA     rcx,[_kernel32]
-        CALL    [LoadLibrary]
-        MOV     [kernel32],rax                  ; kernel32.dll
-        LEA     rcx,[_msvcrt]
-        CALL    [LoadLibrary]
-        MOV     [msvcrt],rax                    ; msvcrt.dll
-        MOV     rcx,[kernel32]
-        LEA     rdx,[_ExitProcess]
-        CALL    [GetProcAddress]
-        MOV     [ExitProcess],rax               ; ExitProcess
-        MOV     rcx,[msvcrt]
-        LEA     rdx,[_getch]
-        CALL    [GetProcAddress]
-        MOV     [getch],rax                     ; getch
-        MOV     rcx,[msvcrt]
-        LEA     rdx,[_printf]
-        CALL    [GetProcAddress]
-        MOV     [printf],rax                    ; printf
-        CALL    Main
-        LEA     rcx,[_exit]
-        CALL    [printf]
-        CALL    [getch]
-        XOR     ecx,ecx
-        CALL    [ExitProcess]
+gcd:    push    r12 r13
+        sub     rsp,40
+        mov     r12,rcx
+        mov     r13,rdx
+        cmp     rcx,rdx
+        jbe     .1
+        xchg    rcx,rdx
+.1:     mov     rax,rdx
+        xor     edx,edx
+        div     rcx
+        test    rdx,rdx
+        jz      .2
+        xchg    rdx,rcx
+        jmp     .1
+.2:     mov     r9,rcx
+        lea     rcx,[_answer]
+        mov     rdx,r12
+        mov     r8,r13
+        call    [printf]
+        add     rsp,40
+        pop     r13 r12
+        ret
+Main:   sub     rsp,40
+        mov     rcx,270
+        mov     rdx,192
+        call    gcd
+        mov     rcx,177
+        mov     rdx,137688
+        call    gcd
+        add     rsp,40
+        ret
+Start:  sub     rsp,40
+        lea     rcx,[_kernel32]
+        call    [LoadLibrary]
+        mov     [kernel32],rax                  ; kernel32.dll
+        lea     rcx,[_msvcrt]
+        call    [LoadLibrary]
+        mov     [msvcrt],rax                    ; msvcrt.dll
+        mov     rcx,[kernel32]
+        lea     rdx,[_ExitProcess]
+        call    [GetProcAddress]
+        mov     [ExitProcess],rax               ; ExitProcess
+        mov     rcx,[msvcrt]
+        lea     rdx,[_getch]
+        call    [GetProcAddress]
+        mov     [getch],rax                     ; getch
+        mov     rcx,[msvcrt]
+        lea     rdx,[_printf]
+        call    [GetProcAddress]
+        mov     [printf],rax                    ; printf
+        call    Main
+        lea     rcx,[_exit]
+        call    [printf]
+        call    [getch]
+        xor     ecx,ecx
+        call    [ExitProcess]
 
 section '.data' data readable writeable
 
+input0          dq 0
+input1          dq 0
+iter            dq 0
+
+align 8
 kernel32        dq 0
 msvcrt          dq 0
 getch           dq 0

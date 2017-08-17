@@ -2,25 +2,31 @@
 ; To generate executable file run 'fasm.exe 1_1E.asm' on the command line.
 
 format PE64 console
-entry Start
+entry start
+
+macro falign { align 16 }
 
 section '.text' code readable executable
 
-gcd:    push    r12 r13
+falign
+gcd:
+        push    r12 r13
         sub     rsp,40
         mov     r12,rcx
         mov     r13,rdx
         cmp     rcx,rdx
-        jbe     .1
+        jbe     .compute_loop
         xchg    rcx,rdx
-.1:     mov     rax,rdx
+    .compute_loop:
+        mov     rax,rdx
         xor     edx,edx
         div     rcx
         test    rdx,rdx
-        jz      .2
+        jz      .done
         xchg    rdx,rcx
-        jmp     .1
-.2:     mov     r9,rcx
+        jmp     .compute_loop
+    .done:
+        mov     r9,rcx
         lea     rcx,[_answer]
         mov     rdx,r12
         mov     r8,r13
@@ -28,7 +34,10 @@ gcd:    push    r12 r13
         add     rsp,40
         pop     r13 r12
         ret
-Main:   sub     rsp,40
+
+falign
+main:
+        sub     rsp,40
         mov     rcx,270
         mov     rdx,192
         call    gcd
@@ -37,7 +46,10 @@ Main:   sub     rsp,40
         call    gcd
         add     rsp,40
         ret
-Start:  sub     rsp,40
+
+falign
+start:
+        sub     rsp,40
         lea     rcx,[_kernel32]
         call    [LoadLibrary]
         mov     [kernel32],rax                  ; kernel32.dll
@@ -56,7 +68,7 @@ Start:  sub     rsp,40
         lea     rdx,[_printf]
         call    [GetProcAddress]
         mov     [printf],rax                    ; printf
-        call    Main
+        call    main
         lea     rcx,[_exit]
         call    [printf]
         call    [getch]

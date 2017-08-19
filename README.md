@@ -1,1 +1,1 @@
-# Art Of Computer Programming
+# The Art of Computer Programming

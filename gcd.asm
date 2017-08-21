@@ -1,3 +1,4 @@
+; Greatest common divisor (gcd).
 ; Algorithm 1.1E (Euclids's algorithm) implemented in x86_64 assembly language.
 ; To generate executable file run 'fasm.exe gcd.asm' on the command line.
 
@@ -30,6 +31,7 @@ gcd:                            ; in: m (rcx), n (rdx) both positive integers
         mov     rax,rdx         ; mov m (rdx) to rax for division
         xor     edx,edx         ; zero out rdx for division
         div     rcx             ; divide m / n (rdx:rax / rcx)
+        inc     [iter_count]
         test    rdx,rdx         ; remainder r = rdx, if (r == 0) n (rcx) is the answer
         jz      .done
         xchg    rdx,rcx         ; set m = n, n = r
@@ -52,6 +54,8 @@ print_answer:
         mov     rdx,[.m]
         mov     r8,[.n]
         mov     r9,[.d]
+        mov     eax,[iter_count]
+        mov     dword[.fparam5],eax
         icall   printf
         add     rsp,.localsize
         ret
@@ -65,6 +69,7 @@ main:
         test    rcx,rcx
         jz      .exit
         mov     rdx,[inputs+rsi*8+8]
+        mov     [iter_count],0
         call    gcd
         mov     rcx,[inputs+rsi*8]
         mov     rdx,[inputs+rsi*8+8]
@@ -106,7 +111,8 @@ start:
 
 section '.data' data readable writeable
 
-inputs          dq 270,192, 177,137688, 1000,10, 0
+inputs          dq 270,192, 177,137688, 1000,10, 37123781,27821, 19999999999999,19999912341, 0
+iter_count      dd 0
 
 align 8
 kernel32        dq 0
@@ -121,7 +127,7 @@ _ExitProcess    db 'ExitProcess',0
 _getch          db '_getch',0
 _printf         db 'printf',0
 _exit           db 'Hit any key to exit this program...',13,10,0
-_answer         db 'gcd(%d, %d) = %d.',13,10,0
+_answer         db 'gcd(%llu, %llu) = %llu (Number of iterations: %u).',13,10,0
 
 section '.idata' import data readable writeable
 

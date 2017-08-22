@@ -1,6 +1,6 @@
 ; Greatest common divisor (gcd).
 ; Algorithm 1.1E (Euclids's algorithm) implemented in x86_64 assembly language.
-; To generate executable file run 'fasm.exe gcd.asm' on the command line.
+; To generate executable file open it in fasmw.exe editor and press F9.
 
 format PE64 console
 entry start
